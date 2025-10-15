@@ -167,6 +167,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.post('/api/check-password', (req, res) => {
+  const { password } = req.body;
+  
+  if (password === process.env.CLASS_PASSWORD) {
+    return res.json({ valid: true });
+  } else {
+    return res.status(401).json({ valid: false });
+  }
+});
+
 app.post('/api/improve-pitch', async (req, res) => {
   try {
     const { originalPitch, feedback, password } = req.body;
@@ -228,3 +238,4 @@ app.listen(PORT, () => {
   console.log(`API endpoint: http://localhost:${PORT}/api/evaluate-pitch`);
 
 });
+
