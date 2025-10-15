@@ -130,6 +130,10 @@ async function getDragonFeedback(dragonId, pitch) {
   }
 }
 
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
 app.post('/api/evaluate-pitch', async (req, res) => {
   try {
     const { pitch, dragonIds, password } = req.body;
@@ -222,4 +226,5 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🐉 Dragon's Den server running on port ${PORT}`);
   console.log(`API endpoint: http://localhost:${PORT}/api/evaluate-pitch`);
+
 });
