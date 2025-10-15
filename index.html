@@ -200,42 +200,37 @@
         document.getElementById('back-to-results-btn').addEventListener('click', backToResults);
         
         // Password Check Function
-        async function checkPassword() {
-            const password = document.getElementById('password-input').value;
-            const errorDiv = document.getElementById('password-error');
-            
-            if (!password) {
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-            
-            try {
-                // Test the password with a dummy request
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        pitch: 'test',
-                        dragonIds: ['skylar'],
-                        password: password,
-                        testOnly: true
-                    })
-                });
-                
-                if (response.status === 401) {
-                    errorDiv.classList.remove('hidden');
-                    return;
-                }
-                
-                // Password correct!
-                userPassword = password;
-                document.getElementById('password-screen').classList.add('hidden');
-                document.getElementById('select-screen').classList.remove('hidden');
-                
-            } catch (error) {
-                errorDiv.classList.remove('hidden');
-            }
+    async function checkPassword() {
+    const password = document.getElementById('password-input').value;
+    const errorDiv = document.getElementById('password-error');
+    
+    if (!password) {
+        errorDiv.classList.remove('hidden');
+        return;
+    }
+    
+    try {
+        // Check password with lightweight endpoint
+        const response = await fetch('https://dragons-den.onrender.com/api/check-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: password })
+        });
+        
+        if (response.status === 401 || !response.ok) {
+            errorDiv.classList.remove('hidden');
+            return;
         }
+        
+        // Password correct!
+        userPassword = password;
+        document.getElementById('password-screen').classList.add('hidden');
+        document.getElementById('select-screen').classList.remove('hidden');
+        
+    } catch (error) {
+        errorDiv.classList.remove('hidden');
+    }
+}
         
         // Functions
         function renderDragons() {
@@ -490,3 +485,4 @@
 </body>
 
 </html>
+
