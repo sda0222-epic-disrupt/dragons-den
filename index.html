@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon's Den Pitch Evaluator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen p-4">
+    <div id="app" class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2 text-center">Dragon's Den Pitch Evaluator</h1>
+            <p class="text-gray-600 text-center">Select up to 3 dragons to evaluate your business idea</p>
+        </div>
+        
+        <!-- Password Entry Screen -->
+        <div id="password-screen" class="space-y-6">
+            <div class="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Enter Class Password</h2>
+                <p class="text-gray-600 mb-6 text-center">Please enter your class password to access the Dragon's Den</p>
+                
+                <input 
+                    type="password" 
+                    id="password-input" 
+                    placeholder="Enter password..."
+                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-gray-700 mb-4"
+                    onkeypress="if(event.key === 'Enter') checkPassword()"
+                />
+                
+                <button 
+                    id="password-submit-btn" 
+                    onclick="checkPassword()"
+                    class="w-full px-6 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700">
+                    Enter Dragon's Den
+                </button>
+                
+                <div id="password-error" class="hidden mt-4 p-3 bg-red-50 border border-red-300 rounded-lg">
+                    <p class="text-red-700 text-sm text-center">❌ Incorrect password. Please try again or contact your instructor.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dragon Selection Screen -->
+        <div id="select-screen" class="space-y-6 hidden">
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <p class="text-lg font-medium text-gray-700">
+                    Selected: <span id="selected-count">0</span> / 3 Dragons
+                </p>
+            </div>
+            
+            <!-- Core Dragons -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Core Dragons</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="original-dragons"></div>
+            </div>
+            
+            <!-- Specialized Evaluators -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Specialized Evaluators</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="specialized-dragons"></div>
+            </div>
+            
+            <!-- Legendary Thinkers -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Legendary Thinkers</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="legendary-dragons"></div>
+            </div>
+            
+            <div class="flex justify-center">
+                <button id="continue-btn" disabled class="px-8 py-3 rounded-lg font-semibold text-white text-lg bg-gray-400 cursor-not-allowed">
+                    Continue to Pitch →
+                </button>
+            </div>
+        </div>
+        
+        <!-- Pitch Input Screen -->
+        <div id="pitch-screen" class="space-y-6 hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Your Selected Dragons:</h2>
+                <div id="selected-dragons-display" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Enter Your Business Pitch</h2>
+                <textarea id="pitch-input" 
+                    placeholder="Describe your business idea in detail. Include the problem you're solving, your solution, target market, business model, and why this opportunity is compelling..."
+                    class="w-full h-64 p-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-gray-700"></textarea>
+                <p class="text-sm text-gray-500 mt-2">
+                    Tip: The more detail you provide, the better feedback you'll receive!
+                </p>
+            </div>
+            
+            <div class="flex justify-between">
+                <button id="back-btn" class="px-6 py-3 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300">
+                    ← Back to Dragons
+                </button>
+                <button id="submit-btn" class="px-8 py-3 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700">
+                    Submit to Dragons
+                </button>
+            </div>
+        </div>
+        
+        <!-- Results Screen -->
+        <div id="results-screen" class="space-y-6 hidden">
+            <div id="loading-screen" class="bg-white rounded-lg shadow-lg p-12 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-xl text-gray-700">The dragons are evaluating your pitch...</p>
+            </div>
+            
+            <div id="feedback-container" class="hidden">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Dragon Feedback</h2>
+                    <div id="feedback-list"></div>
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <button id="make-better-btn" class="px-8 py-3 rounded-lg font-semibold text-white bg-purple-600 hover:bg-purple-700">
+                        ✨ Make it Better
+                    </button>
+                    <button id="reset-btn" class="px-8 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700">
+                        Evaluate Another Idea
+                    </button>
+                </div>
+            </div>
+            
+            <div id="error-container" class="hidden bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                <div class="flex items-center mb-2">
+                    <span class="text-2xl mr-2">⚠️</span>
+                    <h3 class="text-lg font-bold text-red-800">Error</h3>
+                </div>
+                <p id="error-message" class="text-red-700"></p>
+                <button id="try-again-btn" class="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    Try Again
+                </button>
+            </div>
+        </div>
+        
+        <!-- Improved Pitch Screen -->
+        <div id="improved-screen" class="space-y-6 hidden">
+            <div id="improving-loader" class="bg-white rounded-lg shadow-lg p-12 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                <p class="text-xl text-gray-700">Synthesizing dragon feedback into an improved pitch...</p>
+            </div>
+            
+            <div id="improved-container" class="hidden">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">✨ Improved Pitch</h2>
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border-2 border-purple-200">
+                        <p id="improved-pitch-text" class="text-gray-800 whitespace-pre-wrap"></p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <button id="use-improved-btn" class="px-8 py-3 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700">
+                        ✓ Use This Version
+                    </button>
+                    <button id="back-to-results-btn" class="px-8 py-3 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300">
+                        ← Back to Feedback
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://localhost:3001/api/evaluate-pitch';
+        const IMPROVE_URL = 'http://localhost:3001/api/improve-pitch';
+        
+        // State
+        let userPassword = null;
+        let selectedDragons = [];
+        let currentPitch = '';
+        let currentFeedback = [];
+        
+        // Dragon definitions
+        const dragons = [
+            { id: 'skylar', name: "Skylar \"Moonshot\" Visionnaire", title: "The Dreamer", type: 'original', emoji: '🚀', bgColor: 'bg-purple-50', borderColor: 'border-purple-300', description: 'Focuses on revolutionary ideas that challenge conventional thinking.' },
+            { id: 'morgan', name: "Morgan \"Consumer Compass\" Fields", title: "The Consumerist", type: 'original', emoji: '💡', bgColor: 'bg-green-50', borderColor: 'border-green-300', description: 'Obsessed with solving real consumer problems.' },
+            { id: 'alex', name: "Alex \"The Abacus\" Ledger", title: "The Spreadsheet Jockey", type: 'original', emoji: '💰', bgColor: 'bg-blue-50', borderColor: 'border-blue-300', description: 'Focuses on financial viability and business models.' },
+            { id: 'terra', name: "Terra \"Green Future\" Martinez", title: "The Sustainability Champion", type: 'specialized', emoji: '🌱', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-300', description: 'Evaluates environmental impact and sustainability.' },
+            { id: 'zara', name: "Dr. Zara \"TechCore\" Chen", title: "The Technology Purist", type: 'specialized', emoji: '💻', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-300', description: 'Assesses technical feasibility and scalability.' },
+            { id: 'phoenix', name: "Phoenix \"Executable\" Kane", title: "The Pragmatist", type: 'specialized', emoji: '🎯', bgColor: 'bg-orange-50', borderColor: 'border-orange-300', description: 'Focuses on execution feasibility and operations.' },
+            { id: 'jobs', name: "Steve Jobs Style", title: "The Visionary Perfectionist", type: 'legendary', emoji: '🍎', bgColor: 'bg-gray-50', borderColor: 'border-gray-300', description: 'Evaluates design excellence and user experience.' },
+            { id: 'christensen', name: "Clayton Christensen Style", title: "The Innovation Theorist", type: 'legendary', emoji: '📚', bgColor: 'bg-cyan-50', borderColor: 'border-cyan-300', description: 'Analyzes disruptive innovation potential.' },
+            { id: 'blakely', name: "Sara Blakely Style", title: "The Scrappy Entrepreneur", type: 'legendary', emoji: '💪', bgColor: 'bg-pink-50', borderColor: 'border-pink-300', description: 'Focuses on bootstrapping and entrepreneurial grit.' }
+        ];
+        
+        // Initialize
+        renderDragons();
+        
+        // Event Listeners
+        document.getElementById('continue-btn').addEventListener('click', showPitchScreen);
+        document.getElementById('back-btn').addEventListener('click', showSelectScreen);
+        document.getElementById('submit-btn').addEventListener('click', submitPitch);
+        document.getElementById('reset-btn').addEventListener('click', resetApp);
+        document.getElementById('try-again-btn').addEventListener('click', resetApp);
+        document.getElementById('make-better-btn').addEventListener('click', improvePitch);
+        document.getElementById('use-improved-btn').addEventListener('click', useImprovedPitch);
+        document.getElementById('back-to-results-btn').addEventListener('click', backToResults);
+        
+        // Password Check Function
+        async function checkPassword() {
+            const password = document.getElementById('password-input').value;
+            const errorDiv = document.getElementById('password-error');
+            
+            if (!password) {
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            try {
+                // Test the password with a dummy request
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pitch: 'test',
+                        dragonIds: ['skylar'],
+                        password: password,
+                        testOnly: true
+                    })
+                });
+                
+                if (response.status === 401) {
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                // Password correct!
+                userPassword = password;
+                document.getElementById('password-screen').classList.add('hidden');
+                document.getElementById('select-screen').classList.remove('hidden');
+                
+            } catch (error) {
+                errorDiv.classList.remove('hidden');
+            }
+        }
+        
+        // Functions
+        function renderDragons() {
+            const originalContainer = document.getElementById('original-dragons');
+            const specializedContainer = document.getElementById('specialized-dragons');
+            const legendaryContainer = document.getElementById('legendary-dragons');
+            
+            dragons.forEach(dragon => {
+                const card = createDragonCard(dragon);
+                if (dragon.type === 'original') {
+                    originalContainer.appendChild(card);
+                } else if (dragon.type === 'specialized') {
+                    specializedContainer.appendChild(card);
+                } else {
+                    legendaryContainer.appendChild(card);
+                }
+            });
+        }
+        
+        function createDragonCard(dragon) {
+            const card = document.createElement('div');
+            card.className = `p-4 rounded-lg border-2 cursor-pointer transition-all ${dragon.bgColor} ${dragon.borderColor}`;
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-2xl">${dragon.emoji}</span>
+                    <span class="check-mark hidden text-2xl">✓</span>
+                </div>
+                <h3 class="font-bold text-gray-800 mb-1 text-sm">${dragon.name}</h3>
+                <p class="text-xs text-gray-600 mb-2">${dragon.title}</p>
+                <p class="text-xs text-gray-500">${dragon.description}</p>
+            `;
+            
+            card.addEventListener('click', () => toggleDragon(dragon.id, card));
+            return card;
+        }
+        
+        function toggleDragon(dragonId, card) {
+            const index = selectedDragons.indexOf(dragonId);
+            
+            if (index > -1) {
+                selectedDragons.splice(index, 1);
+                card.classList.remove('ring-4', 'ring-offset-2', 'ring-blue-500');
+                card.querySelector('.check-mark').classList.add('hidden');
+            } else if (selectedDragons.length < 3) {
+                selectedDragons.push(dragonId);
+                card.classList.add('ring-4', 'ring-offset-2', 'ring-blue-500');
+                card.querySelector('.check-mark').classList.remove('hidden');
+            }
+            
+            updateSelectedCount();
+        }
+        
+        function updateSelectedCount() {
+            document.getElementById('selected-count').textContent = selectedDragons.length;
+            const continueBtn = document.getElementById('continue-btn');
+            
+            if (selectedDragons.length > 0) {
+                continueBtn.disabled = false;
+                continueBtn.className = 'px-8 py-3 rounded-lg font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700';
+            } else {
+                continueBtn.disabled = true;
+                continueBtn.className = 'px-8 py-3 rounded-lg font-semibold text-white text-lg bg-gray-400 cursor-not-allowed';
+            }
+        }
+        
+        function showPitchScreen() {
+            document.getElementById('select-screen').classList.add('hidden');
+            document.getElementById('pitch-screen').classList.remove('hidden');
+            
+            const container = document.getElementById('selected-dragons-display');
+            container.innerHTML = '';
+            
+            selectedDragons.forEach(dragonId => {
+                const dragon = dragons.find(d => d.id === dragonId);
+                const display = document.createElement('div');
+                display.className = `p-3 rounded-lg ${dragon.bgColor} ${dragon.borderColor} border`;
+                display.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-xl mr-2">${dragon.emoji}</span>
+                        <div>
+                            <p class="font-semibold text-sm">${dragon.name}</p>
+                            <p class="text-xs text-gray-600">${dragon.title}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(display);
+            });
+        }
+        
+        function showSelectScreen() {
+            document.getElementById('pitch-screen').classList.add('hidden');
+            document.getElementById('select-screen').classList.remove('hidden');
+        }
+        
+        async function submitPitch() {
+            const pitch = document.getElementById('pitch-input').value.trim();
+            
+            if (!pitch) {
+                alert('Please enter your business pitch');
+                return;
+            }
+            
+            currentPitch = pitch;
+            
+            document.getElementById('pitch-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+            document.getElementById('loading-screen').classList.remove('hidden');
+            document.getElementById('feedback-container').classList.add('hidden');
+            document.getElementById('error-container').classList.add('hidden');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pitch: pitch,
+                        dragonIds: selectedDragons,
+                        password: userPassword
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to get dragon feedback');
+                }
+                
+                const data = await response.json();
+                currentFeedback = data.evaluations;
+                displayResults(data.evaluations);
+                
+            } catch (error) {
+                displayError(error.message);
+            }
+        }
+        
+        function displayResults(evaluations) {
+            document.getElementById('loading-screen').classList.add('hidden');
+            document.getElementById('feedback-container').classList.remove('hidden');
+            
+            const container = document.getElementById('feedback-list');
+            container.innerHTML = '';
+            
+            evaluations.forEach(result => {
+                const dragon = dragons.find(d => d.id === result.dragonId);
+                const card = document.createElement('div');
+                card.className = `mb-6 p-6 rounded-lg ${dragon.bgColor} border-2 ${dragon.borderColor}`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">${dragon.emoji}</span>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800">${dragon.name}</h3>
+                                <p class="text-sm text-gray-600">${dragon.title}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-2">🏆</span>
+                            <span class="text-3xl font-bold text-gray-800">${result.rating}/10</span>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-800 mb-2">Critique:</h4>
+                        <p class="text-gray-700 italic">"${result.critique}"</p>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-xl mr-2">⚠️</span>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">Key Question:</h4>
+                            <p class="text-gray-700">${result.question}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        function displayError(message) {
+            document.getElementById('loading-screen').classList.add('hidden');
+            document.getElementById('error-container').classList.remove('hidden');
+            document.getElementById('error-message').textContent = message;
+        }
+        
+        async function improvePitch() {
+            document.getElementById('results-screen').classList.add('hidden');
+            document.getElementById('improved-screen').classList.remove('hidden');
+            document.getElementById('improving-loader').classList.remove('hidden');
+            document.getElementById('improved-container').classList.add('hidden');
+            
+            try {
+                const response = await fetch(IMPROVE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        originalPitch: currentPitch,
+                        feedback: currentFeedback,
+                        password: userPassword
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to improve pitch');
+                }
+                
+                const data = await response.json();
+                displayImprovedPitch(data.improvedPitch);
+                
+            } catch (error) {
+                alert('Error improving pitch: ' + error.message);
+                backToResults();
+            }
+        }
+        
+        function displayImprovedPitch(improvedText) {
+            document.getElementById('improving-loader').classList.add('hidden');
+            document.getElementById('improved-container').classList.remove('hidden');
+            document.getElementById('improved-pitch-text').textContent = improvedText;
+        }
+        
+        function useImprovedPitch() {
+            const improvedText = document.getElementById('improved-pitch-text').textContent;
+            document.getElementById('pitch-input').value = improvedText;
+            
+            // Reset and go back to pitch screen
+            document.getElementById('improved-screen').classList.add('hidden');
+            document.getElementById('pitch-screen').classList.remove('hidden');
+            
+            alert('✓ Improved pitch loaded! You can edit it further or submit to the dragons again.');
+        }
+        
+        function backToResults() {
+            document.getElementById('improved-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+        }
+        
+        function resetApp() {
+            selectedDragons = [];
+            currentPitch = '';
+            currentFeedback = [];
+            document.getElementById('pitch-input').value = '';
+            
+            document.querySelectorAll('.check-mark').forEach(mark => mark.classList.add('hidden'));
+            document.querySelectorAll('[class*="ring-4"]').forEach(card => {
+                card.classList.remove('ring-4', 'ring-offset-2', 'ring-blue-500');
+            });
+            
+            updateSelectedCount();
+            
+            document.getElementById('results-screen').classList.add('hidden');
+            document.getElementById('improved-screen').classList.add('hidden');
+            document.getElementById('select-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

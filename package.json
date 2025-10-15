@@ -1,0 +1,19 @@
+{
+  "name": "dragons-den-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Dragon's Den Pitch Evaluator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.17.0",
+    "express": "^4.18.2",
+    "dotenv": "^16.0.3",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
